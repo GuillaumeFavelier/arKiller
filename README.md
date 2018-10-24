@@ -21,6 +21,6 @@ You can use the file `example.cfg` as a template. The only required properties a
 Usage
 -----
 
-On linux:
+On Linux or Windows:
 
 `python bot.py my_config.cfg`
