@@ -155,7 +155,7 @@ class Webhook:
         if result.status_code == 400:
             print("Post Failed, Error 400")
         else:
-            print("Payload delivered successfuly. Code : " + str(result.status_code))
+            print("requests.post() return code : " + str(result.status_code))
             time.sleep(2)
 
 
@@ -198,63 +198,64 @@ killboard_url = 'https://albiononline.com/en/killboard/kill/'
 
 # inspiration from : https://github.com/bearlikelion/ao-killbot
 while True:
-    result = requests.get(gameinfo_url)
-    if result.status_code == 400:
-        print("Post Failed, Error 400")
-    else:
-        print("Payload received successfuly. Code : " + str(result.status_code))
+    try:
+        result = requests.get(gameinfo_url)
+    except requests.exceptions.RequestException as e:
+        print(e)
 
-        package = result.json()
+    print("requests.get() return code : " + str(result.status_code))
 
-        for i in range(len(package) - 1, 0, -1):
-            event_id = package[i]['EventId']
-            current_ts = package[i]['TimeStamp'].split('.', 1)[0]
-            current_ts = datetime.datetime.strptime(current_ts, "%Y-%m-%dT%H:%M:%S")
+    package = result.json()
 
-            if timestamp == -1 or (max((timestamp, current_ts)) == current_ts and timestamp != current_ts):
-                victim_package = package[i]['Victim']
-                killer_package = package[i]['Killer']
+    for i in range(len(package) - 1, 0, -1):
+        event_id = package[i]['EventId']
+        current_ts = package[i]['TimeStamp'].split('.', 1)[0]
+        current_ts = datetime.datetime.strptime(current_ts, "%Y-%m-%dT%H:%M:%S")
 
-                victim_name = victim_package['Name']
-                victim_alliance = victim_package['AllianceName']
-                victim_guild = '[' + victim_alliance + ']' + victim_package['GuildName']
-                victim_power = int(victim_package['AverageItemPower'])
+        if timestamp == -1 or (max((timestamp, current_ts)) == current_ts and timestamp != current_ts):
+            victim_package = package[i]['Victim']
+            killer_package = package[i]['Killer']
 
-                killer_name = killer_package['Name']
-                killer_alliance = killer_package['AllianceName']
-                killer_guild = '[' + killer_alliance + ']' + killer_package['GuildName']
-                killer_power = int(killer_package['AverageItemPower'])
+            victim_name = victim_package['Name']
+            victim_alliance = victim_package['AllianceName']
+            victim_guild = '[' + victim_alliance + ']' + victim_package['GuildName']
+            victim_power = int(victim_package['AverageItemPower'])
 
-                if killer_package['Equipment']['MainHand']:
-                    weapon_url = database_url + killer_package['Equipment']['MainHand']['Type']
+            killer_name = killer_package['Name']
+            killer_alliance = killer_package['AllianceName']
+            killer_guild = '[' + killer_alliance + ']' + killer_package['GuildName']
+            killer_power = int(killer_package['AverageItemPower'])
 
-                s = '[' + killer_name + ' has killed ' + victim_name + '](' + killboard_url + str(event_id) + ')'
+            if killer_package['Equipment']['MainHand']:
+                weapon_url = database_url + killer_package['Equipment']['MainHand']['Type']
 
-                if victim_alliance == input_alliance or killer_alliance == input_alliance:
-                    if victim_alliance == input_alliance:
-                        embed_color = 0xff0000
-                    else:
-                        embed_color = 0x00ff00
+            s = '[' + killer_name + ' has killed ' + victim_name + '](' + killboard_url + str(event_id) + ')'
 
-                    embed = Webhook(input_webhook, color=embed_color)
-                    embed.set_username(username='arKiller_alpha')
-                    if input_avatar:
-                        embed.set_avatar(avatar=input_avatar)
-                    embed.set_author(name='Herald of Death')
-                    embed.set_desc(s)
-                    embed.add_field(name='Killer Guild', value=killer_guild)
-                    embed.add_field(name='Victim Guild', value=victim_guild)
-                    embed.add_field(name='Killer Power', value=killer_power)
-                    embed.add_field(name='Victim Power', value=victim_power)
-                    embed.add_field(name='Fame', value=victim_package['DeathFame'])
-                    if weapon_url:
-                        embed.set_thumbnail(weapon_url)
-                    # embed.set_image(albion)
-                    embed.set_footer(ts=True)
-                    embed.post()
+            if victim_alliance == input_alliance or killer_alliance == input_alliance:
+                if victim_alliance == input_alliance:
+                    embed_color = 0xff0000
+                else:
+                    embed_color = 0x00ff00
 
-                    print(str(current_ts))
+                embed = Webhook(input_webhook, color=embed_color)
+                embed.set_username(username='arKiller_alpha')
+                if input_avatar:
+                    embed.set_avatar(avatar=input_avatar)
+                embed.set_author(name='Herald of Death')
+                embed.set_desc(s)
+                embed.add_field(name='Killer Guild', value=killer_guild)
+                embed.add_field(name='Victim Guild', value=victim_guild)
+                embed.add_field(name='Killer Power', value=killer_power)
+                embed.add_field(name='Victim Power', value=victim_power)
+                embed.add_field(name='Fame', value=victim_package['DeathFame'])
+                if weapon_url:
+                    embed.set_thumbnail(weapon_url)
+                # embed.set_image(albion)
+                embed.set_footer(ts=True)
+                embed.post()
 
-        timestamp = current_ts
+                print(str(current_ts))
+
+    timestamp = current_ts
 
     time.sleep(input_sleep_time)
