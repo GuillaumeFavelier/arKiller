@@ -50,5 +50,5 @@ On Linux or Windows:
 To-Do list
 ----------
 - [x] Improve error handling in network requests.
+- [x] Add a filter for guild instead of alliance.
 - [ ] Add informations for assist kills.
-- [ ] Add a filter for guild instead of alliance.
