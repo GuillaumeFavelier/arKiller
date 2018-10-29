@@ -159,7 +159,7 @@ class Webhook:
             time.sleep(2)
 
 
-def send_embed(package, victory_event, killboard_url, database_url, input_webhook, input_avatar):
+def send_embed(package, victory_event, params):
     event_id = package['EventId']
     victim_package = package['Victim']
     victim_alliance = victim_package['AllianceName']
@@ -171,23 +171,23 @@ def send_embed(package, victory_event, killboard_url, database_url, input_webhoo
     killer_guild = killer_package['GuildName']
     killer_name = killer_package['Name']
 
-    description = '[' + killer_name + ' has killed ' + victim_name + '](' + killboard_url + str(event_id) + ')'
+    description = '[' + killer_name + ' has killed ' + victim_name + '](' + params['killboard_url'] + str(event_id) + ')'
     victim_power = int(victim_package['AverageItemPower'])
     killer_power = int(killer_package['AverageItemPower'])
 
     weapon_url = ''
     if killer_package['Equipment']['MainHand']:
-        weapon_url = database_url + killer_package['Equipment']['MainHand']['Type']
+        weapon_url = params['database_url'] + killer_package['Equipment']['MainHand']['Type']
 
     if victory_event:
         embed_color = 0x00ff00
     else:
         embed_color = 0xff0000
 
-    embed = Webhook(input_webhook, color=embed_color)
+    embed = Webhook(params['webhook'], color=embed_color)
     embed.set_username(username='arKiller_alpha')
-    if input_avatar:
-        embed.set_avatar(avatar=input_avatar)
+    if params['avatar']:
+        embed.set_avatar(avatar=params['avatar'])
     embed.set_author(name='Herald of Death')
     embed.set_desc(description)
     embed.add_field(name='Killer Alliance', value=killer_alliance)
@@ -203,67 +203,82 @@ def send_embed(package, victory_event, killboard_url, database_url, input_webhoo
     embed.post()
 
 
-def main():
-    if len(sys.argv) < 2:
-        print('Help: need the path to the input config file.')
-        exit()
+def init_params():
+    # define default variables
+    params = {
+        'filter': '',
+        'alliance': '',
+        'guild': '',
+        'webhook': '',
+        'avatar': '',
+        'sleep_time': '',
+        'package_size': '',
+        'gameinfo_url': 'https://gameinfo.albiononline.com/api/gameinfo/events?limit=',
+        'database_url': 'https://gameinfo.albiononline.com/api/gameinfo/items/',
+        'killboard_url': 'https://albiononline.com/en/killboard/kill/'}
+    return params
 
+
+def get_params():
     # loading configuration
     config = configparser.ConfigParser()
     config.read(sys.argv[1])
 
     # define default variables
-    input_filter = ''
-    input_alliance = ''
-    input_guild = ''
-    input_webhook = ''
-    input_avatar = ''
-    input_sleep_time = ''
-    input_package_size = ''
-
+    params = init_params()
     try:
-        input_filter = config['DEFAULT']['filter']
-        input_alliance = config['DEFAULT']['alliance']
-        input_guild = config['DEFAULT']['guild']
-        input_webhook = config['DEFAULT']['webhook']
-        input_avatar = config['DEFAULT']['avatar']
-        input_sleep_time = config['DEFAULT']['sleep_time']
-        input_package_size = config['DEFAULT']['package_size']
-
+        params['filter'] = config['DEFAULT']['filter']
+        params['alliance'] = config['DEFAULT']['alliance']
+        params['guild'] = config['DEFAULT']['guild']
+        params['webhook'] = config['DEFAULT']['webhook']
+        params['avatar'] = config['DEFAULT']['avatar']
+        params['sleep_time'] = config['DEFAULT']['sleep_time']
+        params['package_size'] = config['DEFAULT']['package_size']
     except KeyError:
         print('Warning: default key not valid or not found.')
 
+    return params
+
+
+def check_params(params):
     # check required inputs
-    if not input_filter:
+    if not params['filter']:
         print('Error: input filter not set.')
         exit()
 
-    if input_filter == 'alliance' and not input_alliance:
+    if params['filter'] == 'alliance' and not params['alliance']:
         print('Error: input alliance not set.')
         exit()
 
-    if input_filter == 'guild' and not input_guild:
+    if params['filter'] == 'guild' and not params['guild']:
         print('Error: input guild not set.')
         exit()
 
-    if not input_webhook:
+    if not params['webhook']:
         print('Error: input webhook not set')
         exit()
 
     # default values
-    if not input_sleep_time:
-        input_sleep_time = 10
-    if not input_package_size:
-        input_package_size = 25
+    if not params['sleep_time']:
+        params['sleep_time'] = 10
+    if not params['package_size']:
+        params['package_size'] = 25
+
+
+def main():
+    if len(sys.argv) < 2:
+        print('Help: need the path to the input config file.')
+        exit()
+
+    params = get_params()
+    check_params(params)
+
     timestamp = -1
-    gameinfo_url = 'https://gameinfo.albiononline.com/api/gameinfo/events?limit=' + str(input_package_size)
-    database_url = 'https://gameinfo.albiononline.com/api/gameinfo/items/'
-    killboard_url = 'https://albiononline.com/en/killboard/kill/'
 
     # inspiration from : https://github.com/bearlikelion/ao-killbot
     while True:
         try:
-            result = requests.get(gameinfo_url)
+            result = requests.get(params['gameinfo_url'] + str(params['package_size']))
         except requests.exceptions.RequestException as e:
             print(e)
 
@@ -285,17 +300,17 @@ def main():
                 killer_alliance = killer_package['AllianceName']
                 killer_guild = killer_package['GuildName']
 
-                alliance_event = (input_filter == 'alliance' and (victim_alliance == input_alliance or killer_alliance == input_alliance))
-                guild_event = (input_filter == 'guild' and (victim_guild == input_guild or killer_guild == input_guild))
-                victory_event = (guild_event and (killer_guild == input_guild)) or (alliance_event and (killer_alliance == input_alliance))
+                alliance_event = (params['filter'] == 'alliance' and (victim_alliance == params['alliance'] or killer_alliance == params['alliance']))
+                guild_event = (params['filter'] == 'guild' and (victim_guild == params['guild'] or killer_guild == params['guild']))
+                victory_event = (guild_event and (killer_guild == params['guild'])) or (alliance_event and (killer_alliance == params['alliance']))
 
                 if alliance_event or guild_event:
-                    send_embed(current_package, victory_event, killboard_url, database_url, input_webhook, input_avatar)
+                    send_embed(current_package, victory_event, params)
                     print(str(current_ts))
 
         timestamp = current_ts
 
-        time.sleep(input_sleep_time)
+        time.sleep(params['sleep_time'])
 
 
 if __name__ == '__main__':
