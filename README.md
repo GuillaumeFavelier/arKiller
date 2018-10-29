@@ -2,6 +2,7 @@ Albion Online Killboard Bot
 ===========================
 
 Self-hosted Discord bot written in Python that provides a killboard for the selected alliance.
+It is lightweight and easy to configure.
 
 Installation instructions
 -------------------------
@@ -20,7 +21,7 @@ You can use the file `example.cfg` as a template. The only required properties a
 
 * alliance
 
-Name of the input alliance that will used as a source for events.
+Name of the input alliance that will be used as a source for events.
 
 * webhook
 
