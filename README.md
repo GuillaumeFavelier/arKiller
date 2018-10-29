@@ -19,9 +19,17 @@ Configuration
 
 You can use the file `example.cfg` as a template. The only required properties are the alliance name and the webhook URL.
 
+* filter
+
+Can be `guild` or `alliance` to select the nature of the source.
+
 * alliance
 
-Name of the input alliance that will be used as a source for events.
+Name of the input alliance that can be used as a source for events.
+
+* guild
+
+Name of the input guild that can be used as a source for events.
 
 * webhook
 
