@@ -9,7 +9,7 @@ It is lightweight and easy to configure.
 Installation instructions
 -------------------------
 
-The only requirements are the following python packages:
+You must have [Python](https://www.python.org/downloads/) installed along with the following packages:
 `json requests time datetime sys configparser collections`
 
 Most of them should be installed by default but if it's not the case you can follow a standard installation procedure by using `python-pip`:
