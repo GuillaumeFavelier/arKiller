@@ -260,9 +260,9 @@ def check_params(params):
 
     # default values
     if not params['sleep_time']:
-        params['sleep_time'] = 10
+        params['sleep_time'] = 3
     if not params['package_size']:
-        params['package_size'] = 25
+        params['package_size'] = 50
 
 
 def main():
