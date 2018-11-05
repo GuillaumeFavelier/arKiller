@@ -190,10 +190,22 @@ def send_embed(package, victory_event, params):
         embed.set_avatar(avatar=params['avatar'])
     embed.set_author(name='Herald of Death')
     embed.set_desc(description)
-    embed.add_field(name='Killer Alliance', value=killer_alliance)
-    embed.add_field(name='Victim Alliance', value=victim_alliance)
-    embed.add_field(name='Killer Guild', value=killer_guild)
-    embed.add_field(name='Victim Guild', value=victim_guild)
+    if killer_alliance:
+        embed.add_field(name='Killer Alliance', value=killer_alliance)
+    else:
+        embed.add_field(name='Killer Alliance', value='*-None-*')
+    if victim_alliance:
+        embed.add_field(name='Victim Alliance', value=victim_alliance)
+    else:
+        embed.add_field(name='Victim Alliance', value='*-None-*')
+    if killer_guild:
+        embed.add_field(name='Killer Guild', value=killer_guild)
+    else:
+        embed.add_field(name='Killer Guild', value='*-None-*')
+    if victim_guild:
+        embed.add_field(name='Victim Guild', value=victim_guild)
+    else:
+        embed.add_field(name='Victim Guild', value='*-None-*')
     embed.add_field(name='Killer Power', value=killer_power)
     embed.add_field(name='Victim Power', value=victim_power)
     embed.add_field(name='Fame', value=victim_package['DeathFame'])
@@ -260,7 +272,7 @@ def check_params(params):
 
     # default values
     if not params['sleep_time']:
-        params['sleep_time'] = 3
+        params['sleep_time'] = 1
     if not params['package_size']:
         params['package_size'] = 50
 
@@ -285,6 +297,8 @@ def main():
         print("requests.get() return code : " + str(result.status_code))
 
         package = result.json()
+
+        current_ts = -1
 
         for i in range(len(package) - 1, 0, -1):
             current_package = package[i]
