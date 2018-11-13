@@ -47,7 +47,7 @@ Number of elements to fetch for one request.
 
 * sleep_time
 
-Time in seconds between fetching informations.
+Time to wait (in seconds) before fetching informations.
 
 Usage
 -----
