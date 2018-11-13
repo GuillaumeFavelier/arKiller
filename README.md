@@ -1,7 +1,7 @@
 Albion Online Killboard Bot
 ===========================
 
-Self-hosted Discord bot written in Python that provides a killboard for the selected alliance.
+Self-hosted Discord bot written in Python that provides a killboard for the selected **alliance** or **guild**.
 It is lightweight and easy to configure.
 
 ![example](https://github.com/GuillaumeFavelier/arKiller/blob/master/screenshot.png "Example")
